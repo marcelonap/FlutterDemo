@@ -214,6 +214,7 @@ class PhotoDetailView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feedState = ref.watch(photoFeedProvider);
+    final feedViewModel = ref.read(photoFeedProvider.notifier);
     final photo = feedState.photos.where((p) => p.id == photoId).firstOrNull;
 
     // If photo was deleted, go back
@@ -255,11 +256,8 @@ class PhotoDetailView extends ConsumerWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        ref
-                            .read(photoFeedProvider.notifier)
-                            .removePhoto(photoId);
+                        feedViewModel.removePhoto(photoId);
                         Navigator.pop(context); // Close dialog
-                        Navigator.pop(context); // Go back to feed
                       },
                       child: const Text('Delete'),
                     ),

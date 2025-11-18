@@ -6,15 +6,15 @@ import 'package:camera_example/models/photo.dart';
 import 'dart:io';
 
 class PhotoEditView extends ConsumerWidget {
-  const PhotoEditView({super.key, required this.photo});
+  const PhotoEditView({super.key});
 
-  final Photo photo;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoFeedState = ref.watch(photoFeedProvider);
     final photoFeedViewModel = ref.read(photoFeedProvider.notifier);
-    final caption = "";
-    final textController = TextEditingController(text: caption);
+    final textController = TextEditingController(
+      text: photoFeedState.tempPhoto?.caption,
+    );
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Photo')),
       body: Center(
@@ -25,7 +25,7 @@ class PhotoEditView extends ConsumerWidget {
                 child: InteractiveViewer(
                   minScale: 0.5,
                   maxScale: 4.0,
-                  child: Image.file(File(photo.path)),
+                  child: Image.file(File(photoFeedState.tempPhoto!.path)),
                 ),
               ),
             ),
@@ -36,8 +36,7 @@ class PhotoEditView extends ConsumerWidget {
               ),
               controller: textController,
               onChanged: (value) {
-                textController.text = value; // Handle caption change if needed
-                photoFeedViewModel.updatePhotoCaption(photo.id, caption);
+                photoFeedViewModel.updateTempPhotoCaption(value);
               },
             ),
           ],
@@ -47,7 +46,9 @@ class PhotoEditView extends ConsumerWidget {
         builder: (context) {
           return FloatingActionButton(
             onPressed: () {
-              photoFeedViewModel.addPhoto(photo);
+              if (photoFeedState.tempPhoto != null) {
+                photoFeedViewModel.addTempPhoto();
+              }
               Navigator.pop(context);
               Navigator.pop(context);
             },

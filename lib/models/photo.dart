@@ -11,6 +11,10 @@ class Photo {
     this.caption = '',
   });
 
+  set caption(String newCaption) {
+    this.caption = newCaption;
+  }
+
   Photo copyWith({
     String? id,
     String? path,

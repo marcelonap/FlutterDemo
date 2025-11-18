@@ -11,6 +11,21 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
 
   PhotoFeedViewModel(this._storageDataSource) : super(PhotoFeedState());
 
+  void setTempPhoto(Photo? photo) {
+    //make sure to not add 2 copies of the same photo to the state
+    if (photo != null && state.tempPhoto?.id == photo.id) {
+      return;
+    }
+    state = state.copyWith(tempPhoto: photo);
+  }
+
+  void updateTempPhotoCaption(String caption) {
+    if (state.tempPhoto != null) {
+      final updatedTempPhoto = state.tempPhoto!.copyWith(caption: caption);
+      state = state.copyWith(tempPhoto: updatedTempPhoto);
+    }
+  }
+
   Future<void> loadPhotos() async {
     if (_isInitialized) return;
     _isInitialized = true;
@@ -24,8 +39,21 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
   }
 
   void addPhoto(Photo photo) {
+    print('Adding photo: ${photo.caption}');
     state = state.copyWith(photos: [photo, ...state.photos]);
     _persistPhotos();
+  }
+
+  void addTempPhoto() {
+    final tempPhoto = state.tempPhoto;
+    if (tempPhoto != null) {
+      print('Adding photo: ${tempPhoto.caption}');
+      state = state.copyWith(
+        photos: [tempPhoto, ...state.photos],
+        tempPhoto: null,
+      );
+      _persistPhotos();
+    }
   }
 
   void updatePhotoCaption(String photoId, String caption) {
@@ -45,6 +73,9 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     final photoToDelete = state.photos.firstWhere(
       (photo) => photo.id == photoId,
     );
+    state = state.copyWith(
+      photos: state.photos.where((photo) => photo.id != photoId).toList(),
+    );
 
     // Delete from storage
     try {
@@ -55,9 +86,6 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     }
 
     // Remove from state
-    state = state.copyWith(
-      photos: state.photos.where((photo) => photo.id != photoId).toList(),
-    );
     _persistPhotos();
   }
 
@@ -76,6 +104,6 @@ final photoFeedProvider =
     StateNotifierProvider.autoDispose<PhotoFeedViewModel, PhotoFeedState>((
       ref,
     ) {
-      final storageDataSource = ref.watch(photoStorageDataSourceProvider);
+      final storageDataSource = ref.read(photoStorageDataSourceProvider);
       return PhotoFeedViewModel(storageDataSource);
     });

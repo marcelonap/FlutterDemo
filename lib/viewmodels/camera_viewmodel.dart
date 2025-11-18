@@ -114,9 +114,9 @@ final cameraProvider =
         storageDataSource,
         permissionDataSource,
         (photo) {
-          // Delay the cross-provider call to avoid dependency issues
+          // Set as temp photo, don't add it yet (will be added after editing caption)
           Future.microtask(() {
-            ref.read(photoFeedProvider.notifier).addPhoto(photo);
+            ref.read(photoFeedProvider.notifier).setTempPhoto(photo);
           });
         },
       );

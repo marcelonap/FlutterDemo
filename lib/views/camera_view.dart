@@ -13,7 +13,6 @@ class CameraView extends ConsumerWidget {
     // Initialize camera on first build
     final cameraViewModel = ref.read(cameraProvider.notifier);
     final cameraState = ref.watch(cameraProvider);
-
     final initialized = cameraState.isInitialized;
 
     if (!initialized && cameraState.error == null) {
@@ -81,15 +80,15 @@ class CameraView extends ConsumerWidget {
                     child: Center(
                       child: GestureDetector(
                         onTap: () async {
-                          // Take picture with
+                          // Take picture
                           final photo = await cameraViewModel.takePicture();
                           if (photo != null && context.mounted) {
-                            //navigate to photo_edit_view
+                            // Navigate to photo_edit_view
+                            // Note: photo is already set as tempPhoto via callback
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    PhotoEditView(photo: photo),
+                                builder: (context) => PhotoEditView(),
                               ),
                             );
                           }
@@ -117,37 +116,4 @@ class CameraView extends ConsumerWidget {
       ),
     );
   }
-}
-
-Future<String?> _showCaptionDialog(BuildContext context) async {
-  final controller = TextEditingController();
-
-  final result = await showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Add Caption'),
-      content: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          hintText: 'Enter caption (optional)...',
-          border: OutlineInputBorder(),
-        ),
-        maxLines: 3,
-        autofocus: true,
-        textCapitalization: TextCapitalization.sentences,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, ''),
-          child: const Text('Skip'),
-        ),
-        TextButton(
-          onPressed: () => {Navigator.pop(context, controller.text)},
-          child: const Text('Save'),
-        ),
-      ],
-    ),
-  );
-
-  return result;
 }
