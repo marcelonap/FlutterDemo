@@ -9,10 +9,30 @@ class PermissionDataSource {
   }
 
   /// Requests camera permission from the user
-  /// Returns true if granted, false otherwise
-  Future<bool> requestCameraPermission() async {
-    final status = await Permission.camera.request();
-    return status.isGranted;
+  Future<void> requestCameraPermission() async {
+    var status = await Permission.camera.status;
+    if (status.isDenied) {
+      // Request the permission
+      status = await Permission.camera.request();
+      if (status.isGranted) {
+        // Permission granted, proceed with camera access
+        print("Camera permission granted.");
+      } else if (status.isPermanentlyDenied) {
+        // Permission permanently denied, guide user to app settings
+        print("Camera permission permanently denied. Open app settings.");
+        openAppSettings(); // Opens app settings for the user
+      } else {
+        // Permission denied
+        print("Camera permission denied.");
+      }
+    } else if (status.isGranted) {
+      // Permission already granted, proceed with camera access
+      print("Camera permission already granted.");
+    } else if (status.isPermanentlyDenied) {
+      // Permission permanently denied, guide user to app settings
+      print("Camera permission permanently denied. Open app settings.");
+      openAppSettings();
+    }
   }
 
   /// Checks if permission was permanently denied

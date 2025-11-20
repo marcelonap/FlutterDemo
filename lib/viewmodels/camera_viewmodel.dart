@@ -27,21 +27,18 @@ class CameraViewModel extends StateNotifier<CameraState> {
       // Check camera permission
       final hasPermission = await _permissionDataSource
           .isCameraPermissionGranted();
+      print("Camera permission granted: $hasPermission");
 
       if (!hasPermission) {
-        // Request permission
-        final granted = await _permissionDataSource.requestCameraPermission();
-
+        // Request permisawait _
+        _permissionDataSource.requestCameraPermission();
+        final granted = await _permissionDataSource.isCameraPermissionGranted();
+        print("Camera permission granted after request: $granted");
         if (!granted) {
-          final isPermanentlyDenied = await _permissionDataSource
-              .isCameraPermissionPermanentlyDenied();
-          if (isPermanentlyDenied) {
-            state = state.copyWith(
-              error: 'Camera permission denied. Please enable it in Settings.',
-            );
-          } else {
-            state = state.copyWith(error: 'Camera permission is required');
-          }
+          state = state.copyWith(
+            error: 'Camera permission denied. Please enable it in Settings.',
+          );
+          print("Camera permission permanently denied: $granted");
           return;
         }
       }
