@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/photo.dart';
 import '../models/photo_feed_state.dart';
 import '../data/providers.dart';
+import 'package:geolocator/geolocator.dart';
 import '../data/photo_storage_data_source.dart';
 
 /// ViewModel for photo feed - manages photo collection state
@@ -23,6 +24,15 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     if (state.tempPhoto != null) {
       final updatedTempPhoto = state.tempPhoto!.copyWith(caption: caption);
       state = state.copyWith(tempPhoto: updatedTempPhoto);
+    }
+  }
+
+  void updateTempPhotoLocation(Position location) {
+    if (state.tempPhoto != null) {
+      print("Updating temp photo location to: $location");
+      final updatedTempPhoto = state.tempPhoto!.copyWith(location: location);
+      state = state.copyWith(tempPhoto: updatedTempPhoto);
+      print("State with : ${state.tempPhoto!.location}");
     }
   }
 

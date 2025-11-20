@@ -132,6 +132,16 @@ class PhotoFeedView extends ConsumerWidget {
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
+                              if (photo.location != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Location: (${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)})',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               Text(
                                 formattedDate,

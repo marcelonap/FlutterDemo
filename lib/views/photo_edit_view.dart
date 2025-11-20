@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera_example/viewmodels/photo_feed_viewmodel.dart';
 import 'package:camera_example/models/photo.dart';
+import '../viewmodels/location_view_model.dart';
 import 'dart:io';
 
 class PhotoEditView extends ConsumerWidget {
@@ -15,6 +16,7 @@ class PhotoEditView extends ConsumerWidget {
     final textController = TextEditingController(
       text: photoFeedState.tempPhoto?.caption,
     );
+    final locationState = ref.watch(locationViewModelProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Photo')),
       body: Center(
@@ -46,9 +48,16 @@ class PhotoEditView extends ConsumerWidget {
         builder: (context) {
           return FloatingActionButton(
             onPressed: () {
+              if (locationState.position != null) {
+                photoFeedViewModel.updateTempPhotoLocation(
+                  locationState.position!,
+                );
+              }
               if (photoFeedState.tempPhoto != null) {
                 photoFeedViewModel.addTempPhoto();
               }
+              print("From Sceren Location: ${locationState.position}");
+
               Navigator.pop(context);
               Navigator.pop(context);
             },
