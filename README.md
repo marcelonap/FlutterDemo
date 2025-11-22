@@ -2,6 +2,10 @@
 
 A Flutter camera application showcasing Riverpod state management with MVVM architecture.
 
+## Running on your device
+
+I have not tried it myself but to run this on your own device you will need to configure the app for your own firebase project. Either via CLI or manually. I recommend asking AI for help if you get stuck with this process
+
 ## Features
 
 - 📸 Take photos using device camera

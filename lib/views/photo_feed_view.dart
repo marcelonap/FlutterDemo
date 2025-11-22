@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../viewmodels/photo_feed_viewmodel.dart';
 import 'camera_view.dart';
+import 'package:geocode/geocode.dart';
 
 class PhotoFeedView extends ConsumerWidget {
   const PhotoFeedView({super.key});
@@ -15,7 +16,9 @@ class PhotoFeedView extends ConsumerWidget {
     final photos = feedState.photos;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Photo Feed')),
+      appBar: AppBar(title: const Text('Photo Feed'), actions: [
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => feedController.refreshPhotos(),
         child: photos.isEmpty
@@ -23,7 +26,7 @@ class PhotoFeedView extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                  Center(
+                  const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -82,7 +85,7 @@ class PhotoFeedView extends ConsumerWidget {
                           // Photo image
                           AspectRatio(
                             aspectRatio: 16 / 9,
-                            child: photo.url != null && photo.url!.isNotEmpty
+                            child: photo.url != null
                                 ? Image.network(
                                     photo.url!,
                                     fit: BoxFit.cover,
@@ -109,6 +112,7 @@ class PhotoFeedView extends ConsumerWidget {
                                         child: Icon(
                                           Icons.error,
                                           color: Colors.red,
+                                          size: 50,
                                         ),
                                       );
                                     },
@@ -144,7 +148,9 @@ class PhotoFeedView extends ConsumerWidget {
                                 if (photo.location != null) ...[
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Location: (${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)})',
+                                    photo.address != null
+                                        ? 'Location: ${photo.address!.city}, ${photo.address!.countryName}'
+                                        : 'Location: ${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[600],
@@ -295,21 +301,8 @@ class PhotoDetailView extends ConsumerWidget {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4.0,
-                child: photo.url != null && photo.url!.isNotEmpty
-                    ? Image.network(
-                        photo.url!,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                      )
+                child: photo.url != null
+                    ? Image.network(photo.url!)
                     : Image.file(File(photoPath)),
               ),
             ),

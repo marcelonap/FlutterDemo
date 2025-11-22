@@ -55,6 +55,8 @@ dependencies:
   firebase_core: ^4.2.1
   cloud_firestore: ^6.1.0
   firebase_storage: ^13.0.4
+  geocoding: ^4.0.0
+  geocode: ^1.0.3
 
 dev_dependencies:
   flutter_test:

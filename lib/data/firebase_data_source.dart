@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocode/geocode.dart';
 import '../models/photo.dart';
 
 class FirebaseDataSource {
@@ -89,6 +90,14 @@ class FirebaseDataSource {
               ? timestamp.toDate()
               : timestamp as DateTime;
         }
+        Address? address;
+        if (data['position'] != null) {
+          final geoCode = GeoCode();
+          address = await geoCode.reverseGeocoding(
+            latitude: data['position']['latitude'],
+            longitude: data['position']['longitude'],
+          );
+        }
 
         photos.add(
           Photo(
@@ -111,6 +120,7 @@ class FirebaseDataSource {
                     speedAccuracy: 0,
                   )
                 : null,
+            address: address,
           ),
         );
       }

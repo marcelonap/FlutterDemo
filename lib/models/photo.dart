@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:geocode/geocode.dart';
 
 class Photo {
   final String id;
@@ -7,6 +8,7 @@ class Photo {
   final String caption;
   final Position? location;
   final String? url;
+  final Address? address;
 
   Photo({
     required this.id,
@@ -15,6 +17,7 @@ class Photo {
     this.caption = '',
     this.location,
     this.url,
+    this.address,
   });
 
   set caption(String newCaption) {
@@ -32,6 +35,7 @@ class Photo {
     String? caption,
     Position? location,
     String? url,
+    Address? address,
   }) {
     return Photo(
       id: id ?? this.id,
@@ -40,6 +44,7 @@ class Photo {
       caption: caption ?? this.caption,
       location: location ?? this.location,
       url: url ?? this.url,
+      address: address ?? this.address,
     );
   }
 }
