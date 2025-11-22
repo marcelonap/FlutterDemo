@@ -5,6 +5,7 @@ import 'camera_data_source.dart';
 import 'photo_storage_data_source.dart';
 import 'geolocation_data_source.dart';
 import '../models/geolocation_state.dart';
+import 'firebase_data_source.dart';
 import 'permission_data_source.dart';
 
 /// Provider for camera data source (dependency injection)
@@ -27,3 +28,6 @@ final locationDataSourceProvider =
     StateNotifierProvider<GeolocationDataSource, GeolocationState>((ref) {
       return GeolocationDataSource();
     });
+final firebaseDataSourceProvider = Provider<FirebaseDataSource>((ref) {
+  return FirebaseDataSource();
+});

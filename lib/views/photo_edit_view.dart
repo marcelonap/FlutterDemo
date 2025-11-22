@@ -13,9 +13,6 @@ class PhotoEditView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final photoFeedState = ref.watch(photoFeedProvider);
     final photoFeedViewModel = ref.read(photoFeedProvider.notifier);
-    final textController = TextEditingController(
-      text: photoFeedState.tempPhoto?.caption,
-    );
     final locationState = ref.watch(locationViewModelProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Photo')),
@@ -31,12 +28,12 @@ class PhotoEditView extends ConsumerWidget {
                 ),
               ),
             ),
-            TextField(
+            TextFormField(
               decoration: const InputDecoration(
                 labelText: 'Caption',
                 contentPadding: EdgeInsets.all(12.0),
               ),
-              controller: textController,
+              initialValue: photoFeedState.tempPhoto?.caption ?? '',
               onChanged: (value) {
                 photoFeedViewModel.updateTempPhotoCaption(value);
               },
