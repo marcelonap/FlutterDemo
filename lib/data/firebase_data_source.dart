@@ -57,46 +57,73 @@ class FirebaseDataSource {
     }
   }
 
-  // Function that relates fetched photos to firestore photo model
+  // Function that fetches photos from Firestore and downloads them
   Future<List<Photo>> fetchPhotos() async {
-    final snapshot = await firestore
-        .collection('photos')
-        .orderBy('timestamp', descending: true)
-        .get();
+    try {
+      print('Starting to fetch photos from Firestore...');
 
-    final List<Photo> photos = [];
+      final snapshot = await firestore
+          .collection('photos')
+          .orderBy('timestamp', descending: true)
+          .get();
 
-    print("Fetching photos from Firestore... ${snapshot.docs.length}");
+      print('Fetched ${snapshot.docs.length} photos from Firestore');
 
-    for (final doc in snapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
-      print("Fetched photo data: $data");
-      photos.add(
-        Photo(
-          id: doc.id,
-          url: data['url'],
-          path: data['path'] ?? '',
-          timestamp:
-              data['timetaken'] ?? (data['timestamp'] as Timestamp).toDate(),
-          caption: data['caption'] ?? '',
-          location: data['position'] != null
-              ? Position(
-                  latitude: data['position']['latitude'],
-                  longitude: data['position']['longitude'],
-                  timestamp: DateTime.now(),
-                  accuracy: 0,
-                  altitude: 0,
-                  altitudeAccuracy: 0,
-                  heading: 0,
-                  headingAccuracy: 0,
-                  speed: 0,
-                  speedAccuracy: 0,
-                )
-              : null,
-        ),
-      );
+      final List<Photo> photos = [];
+
+      for (final doc in snapshot.docs) {
+        try {
+          final data = doc.data();
+          print(
+            'Processing photo doc ${doc.id}: ${data['caption'] ?? 'no caption'}',
+          );
+
+          // Validate required fields
+          if (data['url'] == null) {
+            print('Warning: Photo ${doc.id} has no URL, skipping');
+            continue;
+          }
+
+          photos.add(
+            Photo(
+              id: doc.id,
+              url: data['url'],
+              path: data['path'] ?? '',
+              timestamp: data['timetaken'] != null
+                  ? (data['timetaken'] is Timestamp
+                        ? (data['timetaken'] as Timestamp).toDate()
+                        : DateTime.parse(data['timetaken']))
+                  : (data['timestamp'] as Timestamp).toDate(),
+              caption: data['caption'] ?? '',
+              location: data['position'] != null
+                  ? Position(
+                      latitude: data['position']['latitude'],
+                      longitude: data['position']['longitude'],
+                      timestamp: DateTime.now(),
+                      accuracy: 0,
+                      altitude: 0,
+                      altitudeAccuracy: 0,
+                      heading: 0,
+                      headingAccuracy: 0,
+                      speed: 0,
+                      speedAccuracy: 0,
+                    )
+                  : null,
+            ),
+          );
+        } catch (e) {
+          print('Error processing photo ${doc.id}: $e');
+          // Continue processing other photos
+        }
+      }
+
+      print('Successfully processed ${photos.length} photos');
+      return photos;
+    } catch (e, stackTrace) {
+      print('Error fetching photos from Firestore: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
     }
-    return photos;
   }
 
   // Delete photo from Firestore and Storage
