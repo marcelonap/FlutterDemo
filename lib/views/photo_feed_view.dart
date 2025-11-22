@@ -10,11 +10,8 @@ class PhotoFeedView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Trigger photo loading on first build
     final feedState = ref.watch(photoFeedProvider);
     final feedController = ref.read(photoFeedProvider.notifier);
-    Future.microtask(() => feedController.loadPhotos());
-
     final photos = feedState.photos;
 
     return Scaffold(
@@ -22,32 +19,38 @@ class PhotoFeedView extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => feedController.refreshPhotos(),
         child: photos.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.photo_library_outlined,
-                      size: 100,
-                      color: Colors.grey,
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.photo_library_outlined,
+                          size: 100,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'No photos yet',
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Tap the + button to take a photo',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Pull down to refresh',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No photos yet',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Tap the + button to take a photo',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Pull down to refresh',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               )
             : ListView.builder(
                 padding: const EdgeInsets.all(8),
