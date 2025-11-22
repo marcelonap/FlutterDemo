@@ -53,7 +53,7 @@ class PhotoEditView extends ConsumerWidget {
               if (photoFeedState.tempPhoto != null) {
                 photoFeedViewModel.addTempPhoto();
               }
-              print("From Sceren Location: ${locationState.position}");
+              print("From Screen Location: ${locationState.position}");
 
               Navigator.pop(context);
               Navigator.pop(context);
