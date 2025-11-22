@@ -6,6 +6,7 @@ class Photo {
   final DateTime timestamp;
   final String caption;
   final Position? location;
+  final String? url;
 
   Photo({
     required this.id,
@@ -13,6 +14,7 @@ class Photo {
     required this.timestamp,
     this.caption = '',
     this.location,
+    this.url,
   });
 
   set caption(String newCaption) {
@@ -29,6 +31,7 @@ class Photo {
     DateTime? timestamp,
     String? caption,
     Position? location,
+    String? url,
   }) {
     return Photo(
       id: id ?? this.id,
@@ -36,6 +39,7 @@ class Photo {
       timestamp: timestamp ?? this.timestamp,
       caption: caption ?? this.caption,
       location: location ?? this.location,
+      url: url ?? this.url,
     );
   }
 }
