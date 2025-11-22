@@ -3,20 +3,14 @@ import '../models/photo.dart';
 import '../models/photo_feed_state.dart';
 import '../data/providers.dart';
 import 'package:geolocator/geolocator.dart';
-import '../data/firebase_data_source.dart';
+import '../data/photo_storage_data_source.dart';
 
 /// ViewModel for photo feed - manages photo collection state
 class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
-  final FirebaseDataSource _firebaseDataSource;
+  final PhotoStorageDataSource _storageDataSource;
   bool _isInitialized = false;
 
-  PhotoFeedViewModel(this._firebaseDataSource) : super(PhotoFeedState()) {
-    _initialize();
-  }
-
-  void _initialize() async {
-    final photos = await loadPhotos();
-  }
+  PhotoFeedViewModel(this._storageDataSource) : super(PhotoFeedState());
 
   void setTempPhoto(Photo? photo) {
     //make sure to not add 2 copies of the same photo to the state
@@ -47,49 +41,32 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     _isInitialized = true;
 
     try {
-      final photos = await _firebaseDataSource.fetchPhotos();
+      final photos = await _storageDataSource.loadPhotos();
       state = state.copyWith(photos: photos);
     } catch (e) {
       state = state.copyWith(error: 'Failed to load photos: $e');
     }
   }
 
-  Future<void> refreshPhotos() async {
-    try {
-      state = state.copyWith(isLoading: true);
-      final photos = await _firebaseDataSource.fetchPhotos();
-      state = state.copyWith(photos: photos, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to refresh photos: $e',
-        isLoading: false,
-      );
-    }
+  void addPhoto(Photo photo) {
+    print('Adding photo: ${photo.caption}');
+    state = state.copyWith(photos: [photo, ...state.photos]);
+    _persistPhotos();
   }
 
-  Future<void> addTempPhoto() async {
+  void addTempPhoto() {
     final tempPhoto = state.tempPhoto;
     if (tempPhoto != null) {
       print('Adding photo: ${tempPhoto.caption}');
-
-      // Upload to Firebase
-      try {
-        final uploadedPhoto = await _firebaseDataSource.uploadPhoto(tempPhoto);
-
-        // Add to state with Firebase URL and ID
-        state = state.copyWith(
-          photos: [uploadedPhoto, ...state.photos],
-          tempPhoto: null,
-        );
-      } catch (e) {
-        state = state.copyWith(error: 'Failed to upload photo: $e');
-        print('Error uploading photo: $e');
-      }
+      state = state.copyWith(
+        photos: [tempPhoto, ...state.photos],
+        tempPhoto: null,
+      );
+      _persistPhotos();
     }
   }
 
-  Future<void> updatePhotoCaption(String photoId, String caption) async {
-    // Update local state first for immediate UI update
+  void updatePhotoCaption(String photoId, String caption) {
     final updatedPhotos = state.photos.map((photo) {
       if (photo.id == photoId) {
         return photo.copyWith(caption: caption);
@@ -98,14 +75,7 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     }).toList();
 
     state = state.copyWith(photos: updatedPhotos);
-
-    // Update in Firebase
-    try {
-      await _firebaseDataSource.updatePhotoCaption(photoId, caption);
-    } catch (e) {
-      state = state.copyWith(error: 'Failed to update caption: $e');
-      print('Error updating caption: $e');
-    }
+    _persistPhotos();
   }
 
   Future<void> removePhoto(String photoId) async {
@@ -113,30 +83,37 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
     final photoToDelete = state.photos.firstWhere(
       (photo) => photo.id == photoId,
     );
-
-    // Remove from state first for immediate UI update
     state = state.copyWith(
       photos: state.photos.where((photo) => photo.id != photoId).toList(),
     );
 
-    // Delete from Firebase
+    // Delete from storage
     try {
-      await _firebaseDataSource.deletePhoto(
-        photoToDelete.id,
-        photoToDelete.url ?? '',
-      );
+      await _storageDataSource.deletePhoto(photoToDelete.path);
     } catch (e) {
       state = state.copyWith(error: 'Failed to delete photo: $e');
-      print('Error deleting photo: $e');
+      return;
     }
+
+    // Remove from state
+    _persistPhotos();
+  }
+
+  void clearPhotos() {
+    state = state.copyWith(photos: []);
+    _persistPhotos();
+  }
+
+  Future<void> _persistPhotos() async {
+    await _storageDataSource.savePhotosMetadata(state.photos);
   }
 }
 
-// Provider for the photo feed
+// Provider for the photo fee
 final photoFeedProvider =
     StateNotifierProvider.autoDispose<PhotoFeedViewModel, PhotoFeedState>((
       ref,
     ) {
-      final firebaseDataSource = ref.read(firebaseDataSourceProvider);
-      return PhotoFeedViewModel(firebaseDataSource);
+      final storageDataSource = ref.read(photoStorageDataSourceProvider);
+      return PhotoFeedViewModel(storageDataSource);
     });
