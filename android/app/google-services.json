@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1017489131370",
+    "project_id": "cameraexample-f3aac",
+    "storage_bucket": "cameraexample-f3aac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017489131370:android:33c31663c00a22c7ae4713",
+        "android_client_info": {
+          "package_name": "com.marcelo.camera_example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwwYb4EO742xZIa6KUuXy4WUkCD_NWs-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
