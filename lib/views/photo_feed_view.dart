@@ -18,154 +18,147 @@ class PhotoFeedView extends ConsumerWidget {
     final photos = feedState.photos;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Photo Feed')),
-      body: RefreshIndicator(
-        onRefresh: () => feedController.refreshPhotos(),
-        child: photos.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.photo_library_outlined,
-                      size: 100,
-                      color: Colors.grey,
+      appBar: AppBar(
+        title: const Text('Photo Feed'),
+        actions: [
+          if (photos.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear all photos?'),
+                    content: const Text(
+                      'This will remove all photos from the feed.',
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No photos yet',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Tap the + button to take a photo',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Pull down to refresh',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: photos.length,
-                itemBuilder: (context, index) {
-                  final photo = photos[index];
-                  final formattedDate = DateFormat(
-                    'MMM d, y • h:mm a',
-                  ).format(photo.timestamp);
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          feedController.clearPhotos();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Clear'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+      body: photos.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 100,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No photos yet',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Tap the + button to take a photo',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: photos.length,
+              itemBuilder: (context, index) {
+                final photo = photos[index];
+                final formattedDate = DateFormat(
+                  'MMM d, y • h:mm a',
+                ).format(photo.timestamp);
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PhotoDetailView(
-                              photoPath: photo.path,
-                              photoId: photo.id,
-                            ),
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PhotoDetailView(
+                            photoPath: photo.path,
+                            photoId: photo.id,
                           ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Photo image
-                          AspectRatio(
-                            aspectRatio: 16 / 9,
-                            child: photo.url != null && photo.url!.isNotEmpty
-                                ? Image.network(
-                                    photo.url!,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
-                                            return child;
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value:
-                                                  loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                            .cumulativeBytesLoaded /
-                                                        loadingProgress
-                                                            .expectedTotalBytes!
-                                                  : null,
-                                            ),
-                                          );
-                                        },
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Center(
-                                        child: Icon(
-                                          Icons.error,
-                                          color: Colors.red,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Image.file(
-                                    File(photo.path),
-                                    fit: BoxFit.cover,
-                                  ),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Photo image
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.file(
+                            File(photo.path),
+                            fit: BoxFit.cover,
                           ),
-                          // Caption and metadata
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (photo.caption.isNotEmpty)
-                                  Text(
-                                    photo.caption,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  )
-                                else
-                                  Text(
-                                    'No caption',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                        ),
+                        // Caption and metadata
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (photo.caption.isNotEmpty)
+                                Text(
+                                  photo.caption,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                if (photo.location != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Location: (${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)})',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
+                                )
+                              else
+                                Text(
+                                  'No caption',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                    fontStyle: FontStyle.italic,
                                   ),
-                                ],
+                                ),
+                              if (photo.location != null) ...[
                                 const SizedBox(height: 4),
                                 Text(
-                                  formattedDate,
+                                  'Location: (${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)})',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
                                   ),
                                 ),
                               ],
-                            ),
+                              const SizedBox(height: 4),
+                              Text(
+                                formattedDate,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-      ),
+                  ),
+                );
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -292,22 +285,7 @@ class PhotoDetailView extends ConsumerWidget {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 4.0,
-                child: photo.url != null && photo.url!.isNotEmpty
-                    ? Image.network(
-                        photo.url!,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                      )
-                    : Image.file(File(photoPath)),
+                child: Image.file(File(photoPath)),
               ),
             ),
           ),
