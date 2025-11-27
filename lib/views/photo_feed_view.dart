@@ -145,18 +145,26 @@ class PhotoFeedView extends ConsumerWidget {
                                       fontStyle: FontStyle.italic,
                                     ),
                                   ),
-                                if (photo.location != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    photo.address != null
-                                        ? 'Location: ${photo.address!.city}, ${photo.address!.countryName}'
-                                        : 'Location: ${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
+                                Row(
+                                  children: [
+                                    if (photo.location != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        photo.address != null
+                                            ? ' ${photo.address!.city}, ${photo.address!.countryName}'
+                                            : ' ${photo.location!.latitude.toStringAsFixed(4)}, ${photo.location!.longitude.toStringAsFixed(4)}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                    if (photo.weather != null) ...[
+                                      const SizedBox(width: 16),
+                                      Text("${photo.weather} °C"),
+                                    ],
+                                  ],
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
                                   formattedDate,

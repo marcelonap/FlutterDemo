@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'views/photo_feed_view.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'views/photo_feed_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  testFirestore();
-  runApp(const ProviderScope(child: MyApp()));
-}
 
-void testFirestore() async {
-  final snapshot = await FirebaseFirestore.instance.collection('photos').get();
-  print("Docs fetched: ${snapshot.docs.length}");
-
-  for (var doc in snapshot.docs) {
-    print("DOC: ${doc.id} -> ${doc.data()}");
+  // Initialize Firebase only if not already initialized
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
+
+  // Sign in anonymously
+  try {
+    if (FirebaseAuth.instance.currentUser == null) {
+      await FirebaseAuth.instance.signInAnonymously();
+      print(
+        'Signed in anonymously with UID: ${FirebaseAuth.instance.currentUser?.uid}',
+      );
+    } else {
+      print(
+        'Already signed in with UID: ${FirebaseAuth.instance.currentUser?.uid}',
+      );
+    }
+  } catch (e) {
+    print('Error signing in anonymously: $e');
+  }
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

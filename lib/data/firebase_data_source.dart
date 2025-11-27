@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocode/geocode.dart';
 import '../models/photo.dart';
+import 'weather_api_service.dart';
 
 class FirebaseDataSource {
   final FirebaseStorage storage = FirebaseStorage.instance;
@@ -91,11 +92,17 @@ class FirebaseDataSource {
               : timestamp as DateTime;
         }
         Address? address;
+        String? weather;
         if (data['position'] != null) {
           final geoCode = GeoCode();
           address = await geoCode.reverseGeocoding(
             latitude: data['position']['latitude'],
             longitude: data['position']['longitude'],
+          );
+          weather = await WeatherApiService.instance.fetchWeatherWithArguments(
+            lat: data['position']['latitude'].toString(),
+            lon: data['position']['longitude'].toString(),
+            time: photoTimestamp,
           );
         }
 
@@ -121,6 +128,7 @@ class FirebaseDataSource {
                   )
                 : null,
             address: address,
+            weather: weather,
           ),
         );
       }

@@ -9,6 +9,7 @@ class Photo {
   final Position? location;
   final String? url;
   final Address? address;
+  final String? weather;
 
   Photo({
     required this.id,
@@ -18,6 +19,7 @@ class Photo {
     this.location,
     this.url,
     this.address,
+    this.weather,
   });
 
   set caption(String newCaption) {
@@ -36,6 +38,7 @@ class Photo {
     Position? location,
     String? url,
     Address? address,
+    String? weather,
   }) {
     return Photo(
       id: id ?? this.id,
@@ -45,6 +48,7 @@ class Photo {
       location: location ?? this.location,
       url: url ?? this.url,
       address: address ?? this.address,
+      weather: weather ?? this.weather,
     );
   }
 }

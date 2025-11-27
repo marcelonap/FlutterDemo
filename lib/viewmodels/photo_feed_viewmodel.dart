@@ -8,14 +8,10 @@ import '../data/firebase_data_source.dart';
 /// ViewModel for photo feed - manages photo collection state
 class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
   final FirebaseDataSource _firebaseDataSource;
-  bool _isInitialized = false;
 
   PhotoFeedViewModel(this._firebaseDataSource) : super(PhotoFeedState()) {
-    _initialize();
-  }
-
-  void _initialize() async {
-    final photos = await loadPhotos();
+    // Automatically load photos when view model is created
+    loadPhotos();
   }
 
   void setTempPhoto(Photo? photo) {
@@ -43,92 +39,83 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
   }
 
   Future<void> loadPhotos() async {
-    if (_isInitialized) return;
-    _isInitialized = true;
-
     try {
+      print('Loading photos from Firebase...');
       final photos = await _firebaseDataSource.fetchPhotos();
       state = state.copyWith(photos: photos);
+      print('Photos loaded successfully. Count: ${photos.length}');
     } catch (e) {
+      print('Error loading photos: $e');
       state = state.copyWith(error: 'Failed to load photos: $e');
     }
   }
 
   Future<void> refreshPhotos() async {
     try {
-      state = state.copyWith(isLoading: true);
+      print('Refreshing photos from Firebase...');
       final photos = await _firebaseDataSource.fetchPhotos();
-      state = state.copyWith(photos: photos, isLoading: false);
+      state = state.copyWith(photos: photos);
+      print('Photos refreshed successfully. Count: ${photos.length}');
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to refresh photos: $e',
-        isLoading: false,
-      );
+      print('Error refreshing photos: $e');
+      state = state.copyWith(error: 'Failed to refresh photos: $e');
     }
+  }
+
+  void addPhoto(Photo photo) {
+    print('Adding photo: ${photo.caption}');
+    state = state.copyWith(photos: [photo, ...state.photos]);
   }
 
   Future<void> addTempPhoto() async {
     final tempPhoto = state.tempPhoto;
     if (tempPhoto != null) {
-      print('Adding photo: ${tempPhoto.caption}');
-
-      // Upload to Firebase
+      print('Uploading photo to Firebase: ${tempPhoto.caption}');
       try {
         final uploadedPhoto = await _firebaseDataSource.uploadPhoto(tempPhoto);
-
-        // Add to state with Firebase URL and ID
+        print('Photo uploaded successfully with ID: ${uploadedPhoto.id}');
         state = state.copyWith(
           photos: [uploadedPhoto, ...state.photos],
           tempPhoto: null,
         );
       } catch (e) {
-        state = state.copyWith(error: 'Failed to upload photo: $e');
         print('Error uploading photo: $e');
+        state = state.copyWith(error: 'Failed to upload photo: $e');
       }
     }
   }
 
   Future<void> updatePhotoCaption(String photoId, String caption) async {
-    // Update local state first for immediate UI update
-    final updatedPhotos = state.photos.map((photo) {
-      if (photo.id == photoId) {
-        return photo.copyWith(caption: caption);
-      }
-      return photo;
-    }).toList();
-
-    state = state.copyWith(photos: updatedPhotos);
-
-    // Update in Firebase
     try {
       await _firebaseDataSource.updatePhotoCaption(photoId, caption);
+      final updatedPhotos = state.photos.map((photo) {
+        if (photo.id == photoId) {
+          return photo.copyWith(caption: caption);
+        }
+        return photo;
+      }).toList();
+      state = state.copyWith(photos: updatedPhotos);
     } catch (e) {
       state = state.copyWith(error: 'Failed to update caption: $e');
-      print('Error updating caption: $e');
     }
   }
 
   Future<void> removePhoto(String photoId) async {
-    // Find the photo to delete
-    final photoToDelete = state.photos.firstWhere(
-      (photo) => photo.id == photoId,
-    );
-
-    // Remove from state first for immediate UI update
-    state = state.copyWith(
-      photos: state.photos.where((photo) => photo.id != photoId).toList(),
-    );
-
-    // Delete from Firebase
     try {
-      await _firebaseDataSource.deletePhoto(
-        photoToDelete.id,
-        photoToDelete.url ?? '',
+      final photo = state.photos.firstWhere((p) => p.id == photoId);
+      if (photo.url != null) {
+        await _firebaseDataSource.deletePhoto(photoId, photo.url!);
+      }
+      state = state.copyWith(
+        photos: state.photos.where((photo) => photo.id != photoId).toList(),
       );
     } catch (e) {
       state = state.copyWith(error: 'Failed to delete photo: $e');
-      print('Error deleting photo: $e');
     }
+  }
+
+  void clearPhotos() {
+    state = state.copyWith(photos: []);
   }
 }
 
