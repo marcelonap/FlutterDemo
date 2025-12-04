@@ -13,6 +13,7 @@ class PhotoFeedView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final feedState = ref.watch(photoFeedProvider);
     final feedController = ref.read(photoFeedProvider.notifier);
+
     final photos = feedState.photos;
 
     return Scaffold(

@@ -41,9 +41,9 @@ class PhotoFeedViewModel extends StateNotifier<PhotoFeedState> {
   Future<void> loadPhotos() async {
     try {
       print('Loading photos from Firebase...');
-      final photos = await _firebaseDataSource.fetchPhotos();
-      state = state.copyWith(photos: photos);
-      print('Photos loaded successfully. Count: ${photos.length}');
+      final currentPhotos = await _firebaseDataSource.fetchPhotos();
+      state = state.copyWith(photos: currentPhotos);
+      print('Photos loaded successfully. Count: ${currentPhotos.length}');
     } catch (e) {
       print('Error loading photos: $e');
       state = state.copyWith(error: 'Failed to load photos: $e');

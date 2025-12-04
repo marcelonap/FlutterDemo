@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocode/geocode.dart';
 import '../models/photo.dart';
-import 'weather_api_service.dart';
+import '../utils/weather_api_service.dart';
 
 class FirebaseDataSource {
   final FirebaseStorage storage = FirebaseStorage.instance;
